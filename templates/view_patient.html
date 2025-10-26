@@ -1,0 +1,424 @@
+{% extends "base.html" %}
+
+{% block title %}Patient Data - {{ patient.name }}{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="page-header">
+        <h2>Patient: {{ patient.name }}</h2>
+        <a href="{{ url_for('doctor_dashboard') }}" class="btn-secondary">← Back to Dashboard</a>
+    </div>
+    
+    <!-- Statistics -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h3>{{ stats.total_entries }}</h3>
+            <p>Total Log Entries</p>
+        </div>
+        <div class="stat-card">
+            <h3>{{ stats.smoked_count }}</h3>
+            <p>Times Smoked</p>
+        </div>
+        <div class="stat-card">
+            <h3>{{ stats.resisted_count }}</h3>
+            <p>Times Resisted</p>
+        </div>
+        <div class="stat-card">
+            <h3>{{ "%.1f"|format(stats.avg_urge_level) }}</h3>
+            <p>Avg Urge Level</p>
+        </div>
+    </div>
+    
+    {% if logs %}
+    <!-- Toggle Visualizations Button -->
+    <div class="dashboard-card">
+        <button class="btn-primary toggle-visualizations" onclick="toggleVisualizations()">
+            <span id="toggle-text">Show Visualizations</span>
+            <span id="toggle-icon">▼</span>
+        </button>
+    </div>
+    
+    <!-- Collapsible Visualizations Section -->
+    <div id="visualizations-section" class="dashboard-card" style="display: none;">
+        <h3>Detailed Analytics</h3>
+        <div class="charts-grid">
+            {% if chart_data.trigger %}
+            <div class="chart-container">
+                <canvas id="triggerChart"></canvas>
+            </div>
+            {% endif %}
+            
+            {% if chart_data.location %}
+            <div class="chart-container">
+                <canvas id="locationChart"></canvas>
+            </div>
+            {% endif %}
+            
+            {% if chart_data.emotion %}
+            <div class="chart-container">
+                <canvas id="emotionChart"></canvas>
+            </div>
+            {% endif %}
+            
+            {% if chart_data.who_with %}
+            <div class="chart-container">
+                <canvas id="whoWithChart"></canvas>
+            </div>
+            {% endif %}
+            
+            {% if chart_data.urge_level %}
+            <div class="chart-container">
+                <canvas id="urgeChart"></canvas>
+            </div>
+            {% endif %}
+            
+            {% if chart_data.trigger_smoke %}
+            <div class="chart-container">
+                <canvas id="triggerSmokeChart"></canvas>
+            </div>
+            {% endif %}
+            
+            {% if chart_data.location_smoke %}
+            <div class="chart-container">
+                <canvas id="locationSmokeChart"></canvas>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Tabs -->
+    <div class="tabs">
+        <button class="tab-btn active" onclick="showTab('smoking')">Smoking Pattern</button>
+        <button class="tab-btn" onclick="showTab('reports')">Medical Reports</button>
+    </div>
+    
+    <!-- Smoking Pattern Tab -->
+    <div id="smoking-tab" class="tab-content active">
+        <div class="dashboard-card">
+            <div style="margin-bottom: 1rem;">
+                <input type="text" id="table-search" placeholder="Search logs..." style="width: 100%; padding: 0.75rem; border: 2px solid #e0e0e0; border-radius: 8px;">
+            </div>
+            {% if logs %}
+                <div class="table-container">
+                    <table class="data-table" id="logs-table">
+                        <thead>
+                            <tr>
+                                <th onclick="sortTable(0)">Date ↕</th>
+                                <th onclick="sortTable(1)">Time ↕</th>
+                                <th onclick="sortTable(2)">Location ↕</th>
+                                <th onclick="sortTable(3)">Trigger ↕</th>
+                                <th onclick="sortTable(4)">Emotion ↕</th>
+                                <th onclick="sortTable(5)">Who With ↕</th>
+                                <th onclick="sortTable(6)">Urge Level ↕</th>
+                                <th onclick="sortTable(7)">Action ↕</th>
+                                <th onclick="sortTable(8)">Notes ↕</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in logs %}
+                            <tr>
+                                <td>{{ log.date }}</td>
+                                <td>{{ log.time }}</td>
+                                <td>{{ log.location or '-' }}</td>
+                                <td>{{ log.trigger or '-' }}</td>
+                                <td>{{ log.emotion or '-' }}</td>
+                                <td>{{ log.who_with or '-' }}</td>
+                                <td>{{ log.urge_level }}</td>
+                                <td class="{{ 'smoked' if log.smoke_or_resist == 'Smoked' else 'resisted' }}">
+                                    {{ log.smoke_or_resist }}
+                                </td>
+                                <td>{{ log.notes or '-' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="no-data">No smoking logs recorded yet.</p>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Medical Reports Tab -->
+    <div id="reports-tab" class="tab-content">
+        <div class="dashboard-card">
+            <h3>Medical Lab Reports</h3>
+            {% if reports %}
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Report Name</th>
+                            <th>Uploaded Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for report in reports %}
+                        <tr>
+                            <td>{{ report.report_name }}</td>
+                            <td>{{ report.uploaded_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td><a href="{{ url_for('view_report', filename=report.filename) }}" target="_blank" class="btn-secondary">View</a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p class="no-data">No medical reports uploaded yet.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+let currentSortColumn = -1;
+let sortDirection = true;
+
+function toggleVisualizations() {
+    const section = document.getElementById('visualizations-section');
+    const toggleText = document.getElementById('toggle-text');
+    const toggleIcon = document.getElementById('toggle-icon');
+    
+    if (section.style.display === 'none') {
+        section.style.display = 'block';
+        toggleText.textContent = 'Hide Visualizations';
+        toggleIcon.textContent = '▲';
+    } else {
+        section.style.display = 'none';
+        toggleText.textContent = 'Show Visualizations';
+        toggleIcon.textContent = '▼';
+    }
+}
+
+function showTab(tabName) {
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    document.getElementById(tabName + '-tab').classList.add('active');
+    event.target.classList.add('active');
+}
+
+// Table sorting
+function sortTable(column) {
+    const table = document.getElementById('logs-table');
+    let rows = Array.from(table.querySelectorAll('tbody tr'));
+    
+    if (currentSortColumn === column) {
+        sortDirection = !sortDirection;
+    } else {
+        currentSortColumn = column;
+        sortDirection = true;
+    }
+    
+    rows.sort((a, b) => {
+        let aVal = a.cells[column].textContent.trim();
+        let bVal = b.cells[column].textContent.trim();
+        
+        // Try to parse as number
+        let aNum = parseFloat(aVal);
+        let bNum = parseFloat(bVal);
+        
+        if (!isNaN(aNum) && !isNaN(bNum)) {
+            return sortDirection ? aNum - bNum : bNum - aNum;
+        }
+        
+        return sortDirection ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+    });
+    
+    rows.forEach(row => table.querySelector('tbody').appendChild(row));
+}
+
+// Search functionality
+document.getElementById('table-search').addEventListener('input', function(e) {
+    const searchTerm = e.target.value.toLowerCase();
+    const rows = document.querySelectorAll('#logs-table tbody tr');
+    
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(searchTerm) ? '' : 'none';
+    });
+});
+
+// Charts
+{% if logs %}
+{% if chart_data.trigger %}
+const triggerCtx = document.getElementById('triggerChart');
+if (triggerCtx) {
+    new Chart(triggerCtx, {
+        type: 'bar',
+        data: {
+            labels: [{% for item in chart_data.trigger %}'{{ item[0] }}'{% if not loop.last %},{% endif %}{% endfor %}],
+            datasets: [{
+                label: 'Frequency',
+                data: [{% for item in chart_data.trigger %}{{ item[1] }}{% if not loop.last %},{% endif %}{% endfor %}],
+                backgroundColor: '#667eea'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                title: { display: true, text: 'Trigger Distribution' }
+            }
+        }
+    });
+}
+{% endif %}
+
+{% if chart_data.location %}
+const locationCtx = document.getElementById('locationChart');
+if (locationCtx) {
+    new Chart(locationCtx, {
+        type: 'bar',
+        data: {
+            labels: [{% for item in chart_data.location %}'{{ item[0] }}'{% if not loop.last %},{% endif %}{% endfor %}],
+            datasets: [{
+                label: 'Frequency',
+                data: [{% for item in chart_data.location %}{{ item[1] }}{% if not loop.last %},{% endif %}{% endfor %}],
+                backgroundColor: '#764ba2'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                title: { display: true, text: 'Location Distribution' }
+            }
+        }
+    });
+}
+{% endif %}
+
+{% if chart_data.emotion %}
+const emotionCtx = document.getElementById('emotionChart');
+if (emotionCtx) {
+    new Chart(emotionCtx, {
+        type: 'bar',
+        data: {
+            labels: [{% for item in chart_data.emotion %}'{{ item[0] }}'{% if not loop.last %},{% endif %}{% endfor %}],
+            datasets: [{
+                label: 'Frequency',
+                data: [{% for item in chart_data.emotion %}{{ item[1] }}{% if not loop.last %},{% endif %}{% endfor %}],
+                backgroundColor: '#f093fb'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                title: { display: true, text: 'Emotion Distribution' }
+            }
+        }
+    });
+}
+{% endif %}
+
+{% if chart_data.who_with %}
+const whoWithCtx = document.getElementById('whoWithChart');
+if (whoWithCtx) {
+    new Chart(whoWithCtx, {
+        type: 'doughnut',
+        data: {
+            labels: [{% for item in chart_data.who_with %}'{{ item[0] }}'{% if not loop.last %},{% endif %}{% endfor %}],
+            datasets: [{
+                data: [{% for item in chart_data.who_with %}{{ item[1] }}{% if not loop.last %},{% endif %}{% endfor %}],
+                backgroundColor: ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#00f2fe']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                title: { display: true, text: 'Who You Were With' }
+            }
+        }
+    });
+}
+{% endif %}
+
+{% if chart_data.urge_level %}
+const urgeCtx = document.getElementById('urgeChart');
+if (urgeCtx) {
+    new Chart(urgeCtx, {
+        type: 'line',
+        data: {
+            labels: [{% for item in chart_data.urge_level %}'Level {{ item[0] }}'{% if not loop.last %},{% endif %}{% endfor %}],
+            datasets: [{
+                label: 'Frequency',
+                data: [{% for item in chart_data.urge_level %}{{ item[1] }}{% if not loop.last %},{% endif %}{% endfor %}],
+                borderColor: '#667eea',
+                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                borderWidth: 2,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                title: { display: true, text: 'Urge Level Distribution' }
+            },
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+}
+{% endif %}
+
+{% if chart_data.trigger_smoke %}
+const triggerSmokeCtx = document.getElementById('triggerSmokeChart');
+if (triggerSmokeCtx) {
+    new Chart(triggerSmokeCtx, {
+        type: 'bar',
+        data: {
+            labels: [{% for item in chart_data.trigger_smoke %}'{{ item[0] }}'{% if not loop.last %},{% endif %}{% endfor %}],
+            datasets: [{
+                label: 'Times Led to Smoking',
+                data: [{% for item in chart_data.trigger_smoke %}{{ item[1] }}{% if not loop.last %},{% endif %}{% endfor %}],
+                backgroundColor: '#dc3545'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                title: { display: true, text: 'Triggers That Led to Smoking' }
+            }
+        }
+    });
+}
+{% endif %}
+
+{% if chart_data.location_smoke %}
+const locationSmokeCtx = document.getElementById('locationSmokeChart');
+if (locationSmokeCtx) {
+    new Chart(locationSmokeCtx, {
+        type: 'bar',
+        data: {
+            labels: [{% for item in chart_data.location_smoke %}'{{ item[0] }}'{% if not loop.last %},{% endif %}{% endfor %}],
+            datasets: [{
+                label: 'Times Led to Smoking',
+                data: [{% for item in chart_data.location_smoke %}{{ item[1] }}{% if not loop.last %},{% endif %}{% endfor %}],
+                backgroundColor: '#dc3545'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                title: { display: true, text: 'Locations That Led to Smoking' }
+            }
+        }
+    });
+}
+{% endif %}
+{% endif %}
+</script>
+{% endblock %}
