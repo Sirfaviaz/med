@@ -521,16 +521,17 @@ if __name__ == '__main__':
         db.create_all()
         logger.info('Database initialized')
     
+    # Get port from environment (Render provides this)
+    port = int(os.environ.get('PORT', 5000))
+    
     # Determine if running in development or production
     is_production = os.environ.get('FLASK_ENV') == 'production'
     
     if is_production:
-        logger.info('Starting in production mode')
-        # In production, use a WSGI server like Gunicorn
-        # Run with: gunicorn -w 4 -b 0.0.0.0:5000 app:app
+        logger.info(f'Starting in production mode on port {port}')
         from waitress import serve
-        serve(app, host='0.0.0.0', port=5000)
+        serve(app, host='0.0.0.0', port=port)
     else:
-        logger.info('Starting in development mode')
-        app.run(debug=True, host='0.0.0.0', port=5000)
+        logger.info(f'Starting in development mode on port {port}')
+        app.run(debug=True, host='0.0.0.0', port=port)
 
