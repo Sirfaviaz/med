@@ -1,0 +1,53 @@
+==========================================
+QUICK SSL SETUP - ORACLE CLOUD
+==========================================
+
+YOUR DETAILS:
+- Subdomain: medical.fvzmhd.pro
+- Server IP: 68.233.114.185
+
+==========================================
+STEP 1: UPDATE DNS (Hostinger)
+==========================================
+
+1. Login to Hostinger
+2. Go to: Domains → fvzmhd.pro → DNS → Manage DNS
+3. Add Record:
+   Type: A
+   Name: medical
+   Points to: 68.233.114.185
+   TTL: 3600
+4. Save
+5. Wait 5-30 minutes
+
+==========================================
+STEP 2: RUN ON ORACLE SERVER (SSH)
+==========================================
+
+cd /home/ubuntu/med
+git pull
+chmod +x setup_ssl_oracle.sh
+./setup_ssl_oracle.sh
+
+==========================================
+STEP 3: GET SSL CERTIFICATE
+==========================================
+
+# Wait for DNS propagation first
+nslookup medical.fvzmhd.pro
+
+# Then run:
+sudo certbot --nginx -d medical.fvzmhd.pro
+
+Follow prompts, choose option 2 (redirect HTTP to HTTPS)
+
+==========================================
+DONE!
+==========================================
+
+Access at: https://medical.fvzmhd.pro
+
+Firewall: Make sure ports 80 and 443 are open in Oracle Cloud
+
+==========================================
+
