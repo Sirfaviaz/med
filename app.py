@@ -528,13 +528,18 @@ if __name__ == '__main__':
     # Get port from environment (Render provides this)
     port = int(os.environ.get('PORT', 5000))
     
-    # Determine if running in development or production
-    is_production = os.environ.get('FLASK_ENV') == 'production'
+    # Check if waitress is explicitly requested OR running on Render/production platform
+    is_production = os.environ.get('FLASK_ENV') == 'production' or os.environ.get('RENDER')
     
-    if is_production:
+    # Only use production server if explicitly in production OR on Render
+    if is_production and os.environ.get('RENDER'):
         logger.info(f'Starting in production mode on port {port}')
-        from waitress import serve
-        serve(app, host='0.0.0.0', port=port)
+        try:
+            from waitress import serve
+            serve(app, host='0.0.0.0', port=port)
+        except Exception as e:
+            logger.error(f'Waitress failed, using Flask dev server: {e}')
+            app.run(debug=False, host='0.0.0.0', port=port)
     else:
         logger.info(f'Starting in development mode on port {port}')
         app.run(debug=True, host='0.0.0.0', port=port)
