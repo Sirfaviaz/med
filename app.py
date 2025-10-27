@@ -100,7 +100,9 @@ def handle_file_too_large(error):
 @app.route('/')
 def index():
     if current_user.is_authenticated:
-        if current_user.role == 'doctor':
+        if current_user.role == 'admin':
+            return redirect(url_for('admin_dashboard'))
+        elif current_user.role == 'doctor':
             return redirect(url_for('doctor_dashboard'))
         else:
             return redirect(url_for('patient_dashboard'))
@@ -110,13 +112,14 @@ def index():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
+        username = request.form.get('username', '').strip()
         email = request.form.get('email', '').strip()
         password = request.form.get('password', '')
         name = request.form.get('name', '').strip()
         role = request.form.get('role', 'patient')
         
         # Validate inputs
-        if not email or not password or not name:
+        if not username or not email or not password or not name:
             flash('All fields are required', 'error')
             return redirect(url_for('register'))
         
@@ -129,18 +132,25 @@ def register():
             flash(error_msg, 'error')
             return redirect(url_for('register'))
         
-        # Sanitize name
+        # Sanitize inputs
+        username = sanitize_input(username, 80)
         name = sanitize_input(name, 120)
         role = role if role in ['patient', 'doctor'] else 'patient'
         
-        # Check if user already exists
-        if User.query.filter_by(email=email).first():
+        # Check if username already exists
+        if User.query.filter_by(username=username).first():
+            flash('Username already taken!', 'error')
+            return redirect(url_for('register'))
+        
+        # Check if email already exists
+        if User.query.filter_by(email=email.lower()).first():
             flash('Email already registered!', 'error')
             return redirect(url_for('register'))
         
         try:
             # Create new user
             user = User(
+                username=username,
                 email=email.lower(),
                 name=name,
                 role=role,
@@ -149,7 +159,7 @@ def register():
             db.session.add(user)
             db.session.commit()
             
-            logger.info(f'New user registered: {email} ({role})')
+            logger.info(f'New user registered: {username} ({role})')
             flash('Registration successful! Please login.', 'success')
             return redirect(url_for('login'))
         except Exception as e:
@@ -164,28 +174,35 @@ def register():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        email = request.form.get('email', '').strip()
+        login_input = request.form.get('login', '').strip()  # Can be username or email
         password = request.form.get('password', '')
         
         # Validate inputs
-        if not email or not password:
-            flash('Email and password are required', 'error')
+        if not login_input or not password:
+            flash('Username/Email and password are required', 'error')
             return render_template('login.html')
         
         try:
-            user = User.query.filter_by(email=email.lower()).first()
+            # Try to find user by username or email
+            user = User.query.filter(
+                (User.username == login_input) | (User.email == login_input.lower())
+            ).first()
             
             if user and check_password_hash(user.password_hash, password):
                 login_user(user)
-                logger.info(f'User logged in: {user.email} ({user.role})')
+                logger.info(f'User logged in: {user.username} ({user.role})')
                 flash('Login successful!', 'success')
-                if user.role == 'doctor':
+                
+                # Redirect based on role
+                if user.role == 'admin':
+                    return redirect(url_for('admin_dashboard'))
+                elif user.role == 'doctor':
                     return redirect(url_for('doctor_dashboard'))
                 else:
                     return redirect(url_for('patient_dashboard'))
             else:
-                logger.warning(f'Failed login attempt for: {email}')
-                flash('Invalid email or password', 'error')
+                logger.warning(f'Failed login attempt for: {login_input}')
+                flash('Invalid username/email or password', 'error')
         except Exception as e:
             logger.error(f'Login error: {e}')
             flash('An error occurred. Please try again.', 'error')
@@ -360,6 +377,147 @@ def doctor_dashboard():
     patients = User.query.filter_by(role='patient').all()
     
     return render_template('doctor_dashboard.html', patients=patients)
+
+
+@app.route('/admin/dashboard')
+@login_required
+def admin_dashboard():
+    if current_user.role != 'admin':
+        flash('Access denied', 'error')
+        if current_user.role == 'doctor':
+            return redirect(url_for('doctor_dashboard'))
+        else:
+            return redirect(url_for('patient_dashboard'))
+    
+    # Get all users
+    users = User.query.order_by(User.created_at.desc()).all()
+    
+    # Get statistics
+    stats = {
+        'total_users': len(users),
+        'patients': len([u for u in users if u.role == 'patient']),
+        'doctors': len([u for u in users if u.role == 'doctor']),
+        'admins': len([u for u in users if u.role == 'admin'])
+    }
+    
+    return render_template('admin_dashboard.html', users=users, stats=stats)
+
+
+@app.route('/admin/users/<int:user_id>')
+@login_required
+def view_user(user_id):
+    if current_user.role != 'admin':
+        flash('Access denied', 'error')
+        return redirect(url_for('patient_dashboard'))
+    
+    user = User.query.get_or_404(user_id)
+    return render_template('view_user.html', user=user)
+
+
+@app.route('/admin/users/<int:user_id>/update', methods=['POST'])
+@login_required
+def update_user(user_id):
+    if current_user.role != 'admin':
+        flash('Access denied', 'error')
+        return redirect(url_for('patient_dashboard'))
+    
+    user = User.query.get_or_404(user_id)
+    
+    # Prevent self-deletion of admin role
+    if user.id == current_user.id and request.form.get('role') != 'admin':
+        flash('You cannot change your own admin role', 'error')
+        return redirect(url_for('admin_dashboard'))
+    
+    try:
+        user.username = sanitize_input(request.form.get('username', ''), 80)
+        user.email = request.form.get('email', '').strip().lower()
+        user.name = sanitize_input(request.form.get('name', ''), 120)
+        user.role = request.form.get('role', 'patient')
+        
+        # Validate role
+        if user.role not in ['patient', 'doctor', 'admin']:
+            user.role = 'patient'
+        
+        # Check for duplicate username (excluding current user)
+        existing = User.query.filter(User.id != user.id, User.username == user.username).first()
+        if existing:
+            flash('Username already taken', 'error')
+            return redirect(url_for('view_user', user_id=user_id))
+        
+        # Check for duplicate email (excluding current user)
+        existing = User.query.filter(User.id != user.id, User.email == user.email).first()
+        if existing:
+            flash('Email already registered', 'error')
+            return redirect(url_for('view_user', user_id=user_id))
+        
+        db.session.commit()
+        logger.info(f'User {user_id} updated by admin {current_user.username}')
+        flash('User updated successfully', 'success')
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f'Error updating user: {e}')
+        flash('An error occurred. Please try again.', 'error')
+    
+    return redirect(url_for('admin_dashboard'))
+
+
+@app.route('/admin/users/<int:user_id>/delete', methods=['POST'])
+@login_required
+def delete_user(user_id):
+    if current_user.role != 'admin':
+        flash('Access denied', 'error')
+        return redirect(url_for('patient_dashboard'))
+    
+    user = User.query.get_or_404(user_id)
+    
+    # Prevent self-deletion
+    if user.id == current_user.id:
+        flash('You cannot delete yourself', 'error')
+        return redirect(url_for('admin_dashboard'))
+    
+    try:
+        db.session.delete(user)
+        db.session.commit()
+        logger.info(f'User {user_id} deleted by admin {current_user.username}')
+        flash('User deleted successfully', 'success')
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f'Error deleting user: {e}')
+        flash('An error occurred. Please try again.', 'error')
+    
+    return redirect(url_for('admin_dashboard'))
+
+
+@app.route('/admin/users/<int:user_id>/reset-password', methods=['POST'])
+@login_required
+def reset_password(user_id):
+    if current_user.role != 'admin':
+        flash('Access denied', 'error')
+        return redirect(url_for('patient_dashboard'))
+    
+    user = User.query.get_or_404(user_id)
+    new_password = request.form.get('new_password', '')
+    
+    if not new_password:
+        flash('Password is required', 'error')
+        return redirect(url_for('view_user', user_id=user_id))
+    
+    is_valid, error_msg = validate_password(new_password)
+    if not is_valid:
+        flash(error_msg, 'error')
+        return redirect(url_for('view_user', user_id=user_id))
+    
+    try:
+        user.password_hash = generate_password_hash(new_password)
+        db.session.commit()
+        logger.info(f'Password reset for user {user_id} by admin {current_user.username}')
+        flash('Password reset successfully', 'success')
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f'Error resetting password: {e}')
+        flash('An error occurred. Please try again.', 'error')
+    
+    return redirect(url_for('view_user', user_id=user_id))
 
 
 @app.route('/doctor/patient/<int:patient_id>')
