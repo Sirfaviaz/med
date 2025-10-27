@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, send_file, jsonify, abort
+from flask import Flask, render_template, request, redirect, url_for, flash, send_file, jsonify, abort, session
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -97,6 +97,14 @@ def handle_file_too_large(error):
     return redirect(request.url)
 
 
+@app.after_request
+def make_session_permanent(response):
+    """Make session permanent for authenticated users"""
+    if current_user.is_authenticated:
+        session.permanent = True
+    return response
+
+
 @app.route('/')
 def index():
     if current_user.is_authenticated:
@@ -189,7 +197,8 @@ def login():
             ).first()
             
             if user and check_password_hash(user.password_hash, password):
-                login_user(user)
+                login_user(user, remember=True)
+                session.permanent = True
                 logger.info(f'User logged in: {user.username} ({user.role})')
                 flash('Login successful!', 'success')
                 

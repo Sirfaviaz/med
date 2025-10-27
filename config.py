@@ -28,9 +28,9 @@ class ProductionConfig(Config):
     ENV = 'production'
     
     # Security settings for production
-    SESSION_COOKIE_SECURE = False  # Render provides HTTPS but cookie should work
-    REMEMBER_COOKIE_SECURE = False  # Set to True if you have custom domain with SSL
-    PERMANENT_SESSION_LIFETIME = timedelta(hours=1)
+    SESSION_COOKIE_SECURE = True  # Use secure cookies for HTTPS
+    REMEMBER_COOKIE_SECURE = True  # Secure remember cookies
+    PERMANENT_SESSION_LIFETIME = timedelta(days=30)  # Longer session duration
     
     # Use ephemeral storage (Render compatible)
     UPLOAD_FOLDER = 'uploads'  # Will be in ephemeral storage on Render
