@@ -13,7 +13,10 @@ app = Flask(__name__)
 
 # Load configuration
 config_name = os.environ.get('FLASK_ENV', 'development')
-app.config.from_object(f'config.{config_name.capitalize() + "Config"}')
+if config_name == 'production':
+    app.config.from_object('config.ProductionConfig')
+else:
+    app.config.from_object('config.DevelopmentConfig')
 
 # Ensure upload directory exists
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
@@ -516,11 +519,12 @@ def download_file(filename):
     return send_file(filepath, as_attachment=True)
 
 
+# Initialize database
+with app.app_context():
+    db.create_all()
+    logger.info('Database initialized')
+
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-        logger.info('Database initialized')
-    
     # Get port from environment (Render provides this)
     port = int(os.environ.get('PORT', 5000))
     
