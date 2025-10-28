@@ -105,85 +105,45 @@ body {
     text-align: center;
 }
 
-/* Login hero medical pulse animation */
+/* Login hero ECG heartbeat animation */
 .login-hero {
     position: absolute;
     inset: 0;
     z-index: 1;
     pointer-events: none;
+    overflow: hidden;
 }
 
-.pulse-ring {
+.ecg-line {
     position: absolute;
-    width: 20px;
-    height: 20px;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-radius: 50%;
-    animation: pulseHeartbeat calc(2s + var(--i) * 0.3s) ease-in-out infinite;
-}
-
-.pulse-ring::before {
-    content: '';
-    position: absolute;
-    top: -2px;
-    left: -2px;
-    right: -2px;
-    bottom: -2px;
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    border-radius: 50%;
-    animation: pulseHeartbeat calc(2s + var(--i) * 0.3s) ease-in-out infinite;
-    animation-delay: 0.5s;
-}
-
-.medical-cross {
-    position: absolute;
-    width: 16px;
-    height: 16px;
+    width: 120%;
+    height: 100%;
+    left: -10%;
+    top: 45%;
     opacity: 0.4;
-    animation: fadePulse calc(3s + var(--i) * 0.4s) ease-in-out infinite;
+    filter: drop-shadow(0 0 8px rgba(102, 126, 234, 0.5));
+    animation: ecgMove 3s ease-in-out infinite;
 }
 
-.medical-cross::before,
-.medical-cross::after {
-    content: '';
-    position: absolute;
-    background: rgba(255, 255, 255, 0.6);
-    border-radius: 1px;
+.ecg-path {
+    animation: ecgGlow 3s ease-in-out infinite;
 }
 
-.medical-cross::before {
-    width: 16px;
-    height: 4px;
-    top: 6px;
-    left: 0;
-}
-
-.medical-cross::after {
-    width: 4px;
-    height: 16px;
-    top: 0;
-    left: 6px;
-}
-
-@keyframes pulseHeartbeat {
+@keyframes ecgMove {
     0%, 100% {
-        transform: scale(1);
-        opacity: 0.3;
+        transform: translateX(0);
     }
     50% {
-        transform: scale(1.8);
-        opacity: 0.1;
+        transform: translateX(10px);
     }
 }
 
-@keyframes fadePulse {
+@keyframes ecgGlow {
     0%, 100% {
-        opacity: 0.2;
-        transform: scale(1);
+        opacity: 0.4;
     }
     50% {
-        opacity: 0.6;
-        transform: scale(1.1);
+        opacity: 0.8;
     }
 }
 

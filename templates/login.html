@@ -3,20 +3,22 @@
 {% block content %}
 <div class="auth-container">
     <div class="login-hero" aria-hidden="true">
-        <div class="pulse-ring" style="--i:1; left:10%; top:20%;"></div>
-        <div class="pulse-ring" style="--i:2; left:80%; top:30%;"></div>
-        <div class="pulse-ring" style="--i:3; left:20%; top:60%;"></div>
-        <div class="pulse-ring" style="--i:4; left:70%; top:70%;"></div>
-        <div class="pulse-ring" style="--i:5; left:50%; top:40%;"></div>
-        <div class="pulse-ring" style="--i:6; left:30%; top:80%;"></div>
-        <div class="pulse-ring" style="--i:7; left:90%; top:50%;"></div>
-        <div class="pulse-ring" style="--i:8; left:60%; top:15%;"></div>
-        
-        <!-- Medical cross icons -->
-        <div class="medical-cross" style="--i:1; left:15%; top:25%;"></div>
-        <div class="medical-cross" style="--i:2; left:85%; top:35%;"></div>
-        <div class="medical-cross" style="--i:3; left:25%; top:65%;"></div>
-        <div class="medical-cross" style="--i:4; left:75%; top:75%;"></div>
+        <svg class="ecg-line" viewBox="0 0 1200 200" preserveAspectRatio="none">
+            <defs>
+                <linearGradient id="ecgGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" style="stop-color:rgba(255,255,255,0.3);stop-opacity:1" />
+                    <stop offset="50%" style="stop-color:rgba(255,255,255,0.8);stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:rgba(255,255,255,0.3);stop-opacity:1" />
+                    <animate attributeName="x1" values="0%;100%;0%" dur="3s" repeatCount="indefinite" />
+                    <animate attributeName="x2" values="100%;200%;100%" dur="3s" repeatCount="indefinite" />
+                </linearGradient>
+            </defs>
+            <polyline class="ecg-path" points="0,100 100,100 120,60 130,140 150,80 170,120 180,100 300,100 320,40 330,160 350,90 370,130 380,100 500,100 520,70 530,130 550,90 570,110 580,100 700,100 720,50 730,150 750,80 770,120 780,100 900,100 920,60 930,140 950,80 970,120 980,100 1200,100" 
+                     fill="none" 
+                     stroke="url(#ecgGradient)" 
+                     stroke-width="2.5" 
+                     stroke-linecap="round"/>
+        </svg>
     </div>
     <div class="auth-box">
         <h2>Login</h2>
