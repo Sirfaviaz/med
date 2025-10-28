@@ -83,6 +83,8 @@ body {
     align-items: center;
     min-height: calc(100vh - 200px);
     padding: 2rem 0;
+    position: relative;
+    overflow: hidden;
 }
 
 .auth-box {
@@ -92,12 +94,63 @@ body {
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
     width: 100%;
     max-width: 400px;
+    position: relative;
+    z-index: 2;
+    animation: pop-in 500ms ease-out both;
 }
 
 .auth-box h2 {
     margin-bottom: 1.5rem;
     color: #667eea;
     text-align: center;
+}
+
+/* Login hero animated bubbles */
+.login-hero {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.login-hero .bubble {
+    position: absolute;
+    bottom: -120px;
+    width: clamp(12px, 2.5vw, 22px);
+    height: clamp(12px, 2.5vw, 22px);
+    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.9), rgba(255,255,255,0.25));
+    border-radius: 50%;
+    filter: blur(0.2px);
+    animation: floatUp calc(6s + var(--i) * 0.6s) linear infinite;
+    opacity: 0.85;
+}
+
+@keyframes floatUp {
+    0% {
+        transform: translateY(0) translateX(0) scale(1);
+        opacity: 0;
+    }
+    10% {
+        opacity: 0.8;
+    }
+    50% {
+        transform: translateY(-50vh) translateX(10px) scale(1.05);
+    }
+    100% {
+        transform: translateY(-110vh) translateX(-10px) scale(1.1);
+        opacity: 0;
+    }
+}
+
+@keyframes pop-in {
+    0% {
+        transform: translateY(8px) scale(0.98);
+        opacity: 0;
+    }
+    100% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
 }
 
 .auth-footer {

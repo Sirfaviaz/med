@@ -2,6 +2,18 @@
 
 {% block content %}
 <div class="auth-container">
+    <div class="login-hero" aria-hidden="true">
+        <span class="bubble" style="--i:1; left:5%"></span>
+        <span class="bubble" style="--i:2; left:15%"></span>
+        <span class="bubble" style="--i:3; left:28%"></span>
+        <span class="bubble" style="--i:4; left:40%"></span>
+        <span class="bubble" style="--i:5; left:52%"></span>
+        <span class="bubble" style="--i:6; left:64%"></span>
+        <span class="bubble" style="--i:7; left:76%"></span>
+        <span class="bubble" style="--i:8; left:84%"></span>
+        <span class="bubble" style="--i:9; left:90%"></span>
+        <span class="bubble" style="--i:10; left:70%"></span>
+    </div>
     <div class="auth-box">
         <h2>Login</h2>
         <form method="POST" action="{{ url_for('login') }}">
