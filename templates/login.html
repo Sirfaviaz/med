@@ -3,23 +3,23 @@
 {% block content %}
 <div class="auth-container">
     <div class="login-hero" aria-hidden="true">
-        <svg class="ecg-line" viewBox="0 0 800 200" preserveAspectRatio="none">
+        <svg class="ecg-line" viewBox="-50 0 1100 200" preserveAspectRatio="none">
             <defs>
                 <!-- Glowing gradient that will travel along the line -->
                 <linearGradient id="ecgGradientLight" x1="0%" y1="0%" x2="100%" y2="0%">
                     <stop offset="0%" style="stop-color:rgba(255,255,255,0);stop-opacity:0" />
-                    <stop offset="48%" style="stop-color:rgba(255,255,255,0);stop-opacity:0" />
-                    <stop offset="48.5%" style="stop-color:rgba(255,255,255,0.3);stop-opacity:0.3" />
+                    <stop offset="47%" style="stop-color:rgba(255,255,255,0);stop-opacity:0" />
+                    <stop offset="48%" style="stop-color:rgba(255,255,255,0.3);stop-opacity:0.3" />
                     <stop offset="50%" style="stop-color:rgba(255,255,255,1);stop-opacity:1" />
-                    <stop offset="51.5%" style="stop-color:rgba(255,255,255,0.3);stop-opacity:0.3" />
-                    <stop offset="52%" style="stop-color:rgba(255,255,255,0);stop-opacity:0" />
+                    <stop offset="52%" style="stop-color:rgba(255,255,255,0.3);stop-opacity:0.3" />
+                    <stop offset="53%" style="stop-color:rgba(255,255,255,0);stop-opacity:0" />
                     <stop offset="100%" style="stop-color:rgba(255,255,255,0);stop-opacity:0" />
                     <animate attributeName="x1" values="-300%;400%" dur="12s" repeatCount="indefinite" />
                     <animate attributeName="x2" values="-200%;500%" dur="12s" repeatCount="indefinite" />
                 </linearGradient>
             </defs>
             <!-- Bright pulse light moving along (no base line visible) -->
-            <polyline class="ecg-path-light" points="0,100 100,100 120,60 130,140 150,80 170,120 180,100 300,100 320,40 330,160 350,90 370,130 380,100 500,100 520,70 530,130 550,90 570,110 580,100 700,100 720,50 730,150 750,80 770,120 780,100 900,100" 
+            <polyline class="ecg-path-light" points="-50,100 0,100 100,100 120,60 130,140 150,80 170,120 180,100 300,100 320,40 330,160 350,90 370,130 380,100 500,100 520,70 530,130 550,90 570,110 580,100 700,100 720,50 730,150 750,80 770,120 780,100 900,100 1000,100 1050,100" 
                      fill="none" 
                      stroke="url(#ecgGradientLight)" 
                      stroke-width="4.5" 
