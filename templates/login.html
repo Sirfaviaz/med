@@ -3,21 +3,44 @@
 {% block content %}
 <div class="auth-container">
     <div class="login-hero" aria-hidden="true">
-        <svg class="ecg-line" viewBox="0 0 1200 200" preserveAspectRatio="none">
+        <svg class="ecg-line" viewBox="0 0 800 200" preserveAspectRatio="none">
             <defs>
-                <linearGradient id="ecgGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" style="stop-color:rgba(255,255,255,0.3);stop-opacity:1" />
-                    <stop offset="50%" style="stop-color:rgba(255,255,255,0.8);stop-opacity:1" />
-                    <stop offset="100%" style="stop-color:rgba(255,255,255,0.3);stop-opacity:1" />
-                    <animate attributeName="x1" values="0%;100%;0%" dur="3s" repeatCount="indefinite" />
-                    <animate attributeName="x2" values="100%;200%;100%" dur="3s" repeatCount="indefinite" />
+                <!-- Glowing gradient that will travel along the line -->
+                <linearGradient id="ecgGradientLight" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" style="stop-color:rgba(255,255,255,0.05);stop-opacity:1" />
+                    <stop offset="45%" style="stop-color:rgba(255,255,255,0.05);stop-opacity:1" />
+                    <stop offset="50%" style="stop-color:rgba(255,255,255,1);stop-opacity:1" />
+                    <stop offset="55%" style="stop-color:rgba(255,255,255,0.05);stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:rgba(255,255,255,0.05);stop-opacity:1" />
+                    <animate attributeName="x1" values="-50%;150%" dur="3s" repeatCount="indefinite" />
+                    <animate attributeName="x2" values="50%;250%" dur="3s" repeatCount="indefinite" />
+                </linearGradient>
+                <!-- Base line gradient -->
+                <linearGradient id="ecgGradientBase" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" style="stop-color:rgba(255,255,255,0.15);stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:rgba(255,255,255,0.15);stop-opacity:1" />
                 </linearGradient>
             </defs>
-            <polyline class="ecg-path" points="0,100 100,100 120,60 130,140 150,80 170,120 180,100 300,100 320,40 330,160 350,90 370,130 380,100 500,100 520,70 530,130 550,90 570,110 580,100 700,100 720,50 730,150 750,80 770,120 780,100 900,100 920,60 930,140 950,80 970,120 980,100 1200,100" 
+            <!-- Base ECG line (dim) -->
+            <polyline class="ecg-path-base" points="0,100 100,100 120,60 130,140 150,80 170,120 180,100 300,100 320,40 330,160 350,90 370,130 380,100 500,100 520,70 530,130 550,90 570,110 580,100 700,100 720,50 730,150 750,80 770,120 780,100 900,100" 
                      fill="none" 
-                     stroke="url(#ecgGradient)" 
+                     stroke="url(#ecgGradientBase)" 
                      stroke-width="2.5" 
                      stroke-linecap="round"/>
+            <!-- Bright pulse light moving along -->
+            <polyline class="ecg-path-light" points="0,100 100,100 120,60 130,140 150,80 170,120 180,100 300,100 320,40 330,160 350,90 370,130 380,100 500,100 520,70 530,130 550,90 570,110 580,100 700,100 720,50 730,150 750,80 770,120 780,100 900,100" 
+                     fill="none" 
+                     stroke="url(#ecgGradientLight)" 
+                     stroke-width="3" 
+                     stroke-linecap="round"
+                     opacity="0.8">
+                <animateTransform 
+                    attributeName="gradientTransform"
+                    type="translate"
+                    values="-100 0;800 0;-100 0"
+                    dur="3s"
+                    repeatCount="indefinite"/>
+            </polyline>
         </svg>
     </div>
     <div class="auth-box">
