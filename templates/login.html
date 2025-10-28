@@ -3,7 +3,7 @@
 {% block content %}
 <div class="auth-container">
     <div class="login-hero" aria-hidden="true">
-        <svg class="ecg-line" viewBox="-100 0 1400 200" preserveAspectRatio="none">
+        <svg class="ecg-line" viewBox="0 0 100 20" preserveAspectRatio="none">
             <defs>
                 <!-- Glowing gradient that will travel along the line -->
                 <linearGradient id="ecgGradientLight" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -20,13 +20,12 @@
                     <animate attributeName="x2" values="-200%;500%" dur="8s" repeatCount="indefinite" />
                 </linearGradient>
             </defs>
-            <!-- Bright pulse light moving along (no base line visible) -->
-            <polyline class="ecg-path-light" points="-100,100 0,100 100,100 120,60 130,140 150,80 170,120 180,100 300,100 320,40 330,160 350,90 370,130 380,100 500,100 520,70 530,130 550,90 570,110 580,100 700,100 720,50 730,150 750,80 770,120 780,100 900,100 1100,100 1200,100 1300,100" 
+            <!-- Repeating ECG pattern that fills the entire width -->
+            <polyline class="ecg-path-light" points="0,10 10,10 11,6 12,14 13,8 14,12 15,10 30,10 32,4 33,16 34,9 35,13 36,10 50,10 52,7 53,13 54,9 55,11 56,10 70,10 72,5 73,15 74,8 75,12 76,10 90,10 92,6 93,14 95,8 97,12 98,10 100,10" 
                      fill="none" 
                      stroke="url(#ecgGradientLight)" 
                      stroke-width="4.5" 
-                     stroke-linecap="round"
-                     opacity="1"/>
+                     stroke-linecap="round"/>
         </svg>
     </div>
     <div class="auth-box">
