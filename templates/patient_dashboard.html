@@ -97,6 +97,7 @@
     <div class="dashboard-card">
         <h3>Recent Smoking Logs</h3>
         {% if logs %}
+            <div class="table-container">
             <table class="data-table">
                 <thead>
                     <tr>
@@ -125,6 +126,7 @@
                     {% endfor %}
                 </tbody>
             </table>
+            </div>
         {% else %}
             <p class="no-data">No smoking logs yet. Start tracking your patterns!</p>
         {% endif %}
@@ -134,6 +136,7 @@
     <div class="dashboard-card">
         <h3>My Medical Reports</h3>
         {% if reports %}
+            <div class="table-container">
             <table class="data-table">
                 <thead>
                     <tr>
@@ -152,6 +155,7 @@
                     {% endfor %}
                 </tbody>
             </table>
+            </div>
         {% else %}
             <p class="no-data">No medical reports uploaded yet.</p>
         {% endif %}
