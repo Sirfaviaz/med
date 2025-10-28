@@ -120,13 +120,13 @@ body {
     height: 100%;
     left: -10%;
     top: 45%;
-    opacity: 0.4;
-    filter: drop-shadow(0 0 8px rgba(102, 126, 234, 0.5));
-    animation: ecgMove 3s ease-in-out infinite;
+    opacity: 0.55;
+    filter: drop-shadow(0 0 14px rgba(102, 126, 234, 0.85));
+    animation: ecgMove 6s ease-in-out infinite;
 }
 
 .ecg-path {
-    animation: ecgGlow 3s ease-in-out infinite;
+    animation: ecgGlow 6s ease-in-out infinite;
 }
 
 @keyframes ecgMove {
@@ -134,16 +134,16 @@ body {
         transform: translateX(0);
     }
     50% {
-        transform: translateX(10px);
+        transform: translateX(14px);
     }
 }
 
 @keyframes ecgGlow {
     0%, 100% {
-        opacity: 0.4;
+        opacity: 0.5;
     }
     50% {
-        opacity: 0.8;
+        opacity: 1;
     }
 }
 
