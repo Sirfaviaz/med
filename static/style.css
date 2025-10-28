@@ -117,9 +117,9 @@ body {
 .ecg-line {
     position: absolute;
     width: 100vw;
-    height: 15%;
+    height: 100%;
     left: 0;
-    top: 42.5%;
+    top: 45%;
     opacity: 0.55;
     filter: drop-shadow(0 0 14px rgba(102, 126, 234, 0.85));
     animation: ecgMove 8s ease-in-out infinite;
