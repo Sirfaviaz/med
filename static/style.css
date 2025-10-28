@@ -122,11 +122,11 @@ body {
     top: 45%;
     opacity: 0.55;
     filter: drop-shadow(0 0 14px rgba(102, 126, 234, 0.85));
-    animation: ecgMove 6s ease-in-out infinite;
+    animation: ecgMove 12s ease-in-out infinite;
 }
 
 .ecg-path {
-    animation: ecgGlow 6s ease-in-out infinite;
+    animation: ecgGlow 12s ease-in-out infinite;
 }
 
 @keyframes ecgMove {
