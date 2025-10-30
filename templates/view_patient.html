@@ -41,48 +41,65 @@
     <!-- Collapsible Visualizations Section -->
     <div id="visualizations-section" class="dashboard-card" style="display: none;">
         <h3>Detailed Analytics</h3>
-        <div class="charts-grid">
-            {% if chart_data.trigger %}
-            <div class="chart-container">
-                <canvas id="triggerChart"></canvas>
+
+        <!-- Visualization Tabs -->
+        <div class="tabs" style="margin-bottom: 1rem;">
+            <button class="tab-btn active" onclick="showVizTab('overall')">Overall</button>
+            <button class="tab-btn" onclick="showVizTab('summary')">Summary</button>
+        </div>
+
+        <!-- Overall Tab Content (existing charts) -->
+        <div id="viz-overall" class="tab-content active">
+            <div class="charts-grid">
+                {% if chart_data.trigger %}
+                <div class="chart-container">
+                    <canvas id="triggerChart"></canvas>
+                </div>
+                {% endif %}
+                
+                {% if chart_data.location %}
+                <div class="chart-container">
+                    <canvas id="locationChart"></canvas>
+                </div>
+                {% endif %}
+                
+                {% if chart_data.emotion %}
+                <div class="chart-container">
+                    <canvas id="emotionChart"></canvas>
+                </div>
+                {% endif %}
+                
+                {% if chart_data.who_with %}
+                <div class="chart-container">
+                    <canvas id="whoWithChart"></canvas>
+                </div>
+                {% endif %}
+                
+                {% if chart_data.urge_level %}
+                <div class="chart-container">
+                    <canvas id="urgeChart"></canvas>
+                </div>
+                {% endif %}
+                
+                {% if chart_data.trigger_smoke %}
+                <div class="chart-container">
+                    <canvas id="triggerSmokeChart"></canvas>
+                </div>
+                {% endif %}
+                
+                {% if chart_data.location_smoke %}
+                <div class="chart-container">
+                    <canvas id="locationSmokeChart"></canvas>
+                </div>
+                {% endif %}
             </div>
-            {% endif %}
-            
-            {% if chart_data.location %}
-            <div class="chart-container">
-                <canvas id="locationChart"></canvas>
+        </div>
+
+        <!-- Summary Tab Content: Last 30 days smoked per day -->
+        <div id="viz-summary" class="tab-content">
+            <div class="chart-container" style="width: 100%;">
+                <canvas id="last30Chart"></canvas>
             </div>
-            {% endif %}
-            
-            {% if chart_data.emotion %}
-            <div class="chart-container">
-                <canvas id="emotionChart"></canvas>
-            </div>
-            {% endif %}
-            
-            {% if chart_data.who_with %}
-            <div class="chart-container">
-                <canvas id="whoWithChart"></canvas>
-            </div>
-            {% endif %}
-            
-            {% if chart_data.urge_level %}
-            <div class="chart-container">
-                <canvas id="urgeChart"></canvas>
-            </div>
-            {% endif %}
-            
-            {% if chart_data.trigger_smoke %}
-            <div class="chart-container">
-                <canvas id="triggerSmokeChart"></canvas>
-            </div>
-            {% endif %}
-            
-            {% if chart_data.location_smoke %}
-            <div class="chart-container">
-                <canvas id="locationSmokeChart"></canvas>
-            </div>
-            {% endif %}
         </div>
     </div>
     {% endif %}
@@ -191,6 +208,17 @@ function toggleVisualizations() {
     }
 }
 
+function showVizTab(name) {
+    document.querySelectorAll('#visualizations-section .tab-content').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    document.querySelectorAll('#visualizations-section .tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    document.getElementById('viz-' + name).classList.add('active');
+    event.target.classList.add('active');
+}
+
 function showTab(tabName) {
     document.querySelectorAll('.tab-content').forEach(tab => {
         tab.classList.remove('active');
@@ -265,6 +293,46 @@ if (triggerCtx) {
             maintainAspectRatio: true,
             plugins: {
                 title: { display: true, text: 'Trigger Distribution' }
+            }
+        }
+    });
+}
+{% endif %}
+
+// Summary: Last 30 days daily smoked counts
+{% if summary_last30 %}
+const last30Ctx = document.getElementById('last30Chart');
+if (last30Ctx) {
+    new Chart(last30Ctx, {
+        type: 'line',
+        data: {
+            labels: [{% for d in summary_last30.labels %}'{{ d }}'{% if not loop.last %},{% endif %}{% endfor %}],
+            datasets: [{
+                label: 'Smoked per day (last 30 days)',
+                data: [{% for c in summary_last30.counts %}{{ c }}{% if not loop.last %},{% endif %}{% endfor %}],
+                borderColor: '#4facfe',
+                backgroundColor: 'rgba(79, 172, 254, 0.15)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.3,
+                pointRadius: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                title: { display: true, text: 'Daily Smoked Count (Last 30 Days)' },
+                legend: { display: true }
+            },
+            scales: {
+                x: {
+                    ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 10 }
+                },
+                y: {
+                    beginAtZero: true,
+                    precision: 0
+                }
             }
         }
     });
