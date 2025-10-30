@@ -168,7 +168,8 @@
                                 <th onclick="sortTable(5)">Who With ↕</th>
                                 <th onclick="sortTable(6)">Urge Level ↕</th>
                                 <th onclick="sortTable(7)">Action ↕</th>
-                                <th onclick="sortTable(8)">Notes ↕</th>
+                                <th onclick="sortTable(8)">How It Felt ↕</th>
+                                <th onclick="sortTable(9)">Notes ↕</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -184,6 +185,7 @@
                                 <td class="{{ 'smoked' if log.smoke_or_resist == 'Smoked' else 'resisted' }}">
                                     {{ log.smoke_or_resist }}
                                 </td>
+                                <td>{{ log.how_it_felt or '-' }}</td>
                                 <td>{{ log.notes or '-' }}</td>
                             </tr>
                             {% endfor %}

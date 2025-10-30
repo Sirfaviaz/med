@@ -68,6 +68,11 @@
                 </div>
                 
                 <div class="form-group">
+                    <label for="how_it_felt">How it felt:</label>
+                    <input type="text" id="how_it_felt" name="how_it_felt" placeholder="e.g., Relieved, Guilty, Neutral">
+                </div>
+
+                <div class="form-group">
                     <label for="notes">Notes / Reflection:</label>
                     <textarea id="notes" name="notes" rows="3"></textarea>
                 </div>
@@ -106,6 +111,7 @@
                         <th>Location</th>
                         <th>Trigger</th>
                         <th>Emotion</th>
+                        <th>How It Felt</th>
                         <th>Urge Level</th>
                         <th>Action</th>
                     </tr>
@@ -118,6 +124,7 @@
                         <td>{{ log.location or '-' }}</td>
                         <td>{{ log.trigger or '-' }}</td>
                         <td>{{ log.emotion or '-' }}</td>
+                        <td>{{ log.how_it_felt or '-' }}</td>
                         <td>{{ log.urge_level }}</td>
                         <td class="{{ 'smoked' if log.smoke_or_resist == 'Smoked' else 'resisted' }}">
                             {{ log.smoke_or_resist }}
