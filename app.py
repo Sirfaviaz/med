@@ -631,8 +631,96 @@ def view_patient_data(patient_id):
         'labels': list(daily_counts.keys()),
         'counts': list(daily_counts.values())
     }
+
+    # Last week: Monday to Sunday of the previous full week
+    today = datetime.utcnow().date()
+    current_week_monday = today - timedelta(days=today.weekday())  # this week's Monday
+    last_week_monday = current_week_monday - timedelta(days=7)
+    last_week_days = [last_week_monday + timedelta(days=i) for i in range(7)]
+    last_week_counts = {d.strftime('%Y-%m-%d'): 0 for d in last_week_days}
+    for log in smoking_logs:
+        if log.smoke_or_resist == 'Smoked':
+            try:
+                d = datetime.strptime(log.date, '%Y-%m-%d').date()
+            except Exception:
+                continue
+            if last_week_monday <= d <= last_week_monday + timedelta(days=6):
+                key = d.strftime('%Y-%m-%d')
+                last_week_counts[key] = last_week_counts.get(key, 0) + 1
+    summary_lastweek = {
+        'labels': [d.strftime('%a %d') for d in last_week_days],
+        'counts': [last_week_counts[d.strftime('%Y-%m-%d')] for d in last_week_days]
+    }
+
+    # Today: hour-wise 0-23
+    hours = list(range(24))
+    today_counts = {h: 0 for h in hours}
+    for log in smoking_logs:
+        if log.smoke_or_resist == 'Smoked':
+            try:
+                d = datetime.strptime(log.date, '%Y-%m-%d').date()
+                t = datetime.strptime(log.time, '%H:%M')
+            except Exception:
+                continue
+            if d == today:
+                today_counts[t.hour] = today_counts.get(t.hour, 0) + 1
+    summary_today = {
+        'labels': [f'{h:02d}:00' for h in hours],
+        'counts': [today_counts[h] for h in hours]
+    }
+
+    # Monthly: current month daily counts
+    first_of_month = today.replace(day=1)
+    if first_of_month.month == 12:
+        first_next_month = first_of_month.replace(year=first_of_month.year + 1, month=1, day=1)
+    else:
+        first_next_month = first_of_month.replace(month=first_of_month.month + 1, day=1)
+    days_in_month = (first_next_month - first_of_month).days
+    month_counts = {day: 0 for day in range(1, days_in_month + 1)}
+    for log in smoking_logs:
+        if log.smoke_or_resist == 'Smoked':
+            try:
+                d = datetime.strptime(log.date, '%Y-%m-%d').date()
+            except Exception:
+                continue
+            if first_of_month <= d < first_next_month:
+                month_counts[d.day] = month_counts.get(d.day, 0) + 1
+    summary_month = {
+        'labels': [str(day) for day in range(1, days_in_month + 1)],
+        'counts': [month_counts[day] for day in range(1, days_in_month + 1)]
+    }
+
+    # Yearly: current year month-wise counts
+    year_start = today.replace(month=1, day=1)
+    year_end = today.replace(month=12, day=31)
+    month_names = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+    year_counts = {m: 0 for m in range(1, 13)}
+    for log in smoking_logs:
+        if log.smoke_or_resist == 'Smoked':
+            try:
+                d = datetime.strptime(log.date, '%Y-%m-%d').date()
+            except Exception:
+                continue
+            if year_start <= d <= year_end:
+                year_counts[d.month] = year_counts.get(d.month, 0) + 1
+    summary_year = {
+        'labels': month_names,
+        'counts': [year_counts[m] for m in range(1, 13)]
+    }
     
-    return render_template('view_patient.html', patient=patient, logs=smoking_logs, reports=reports, stats=stats, chart_data=chart_data, summary_last30=summary_last30)
+    return render_template(
+        'view_patient.html',
+        patient=patient,
+        logs=smoking_logs,
+        reports=reports,
+        stats=stats,
+        chart_data=chart_data,
+        summary_last30=summary_last30,
+        summary_lastweek=summary_lastweek,
+        summary_today=summary_today,
+        summary_month=summary_month,
+        summary_year=summary_year
+    )
 
 
 @app.route('/autocomplete/<field_name>')
