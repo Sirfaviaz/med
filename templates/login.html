@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="login-hero" aria-hidden="true">
+        <svg class="ecg-line" viewBox="-100 0 1600 200" preserveAspectRatio="none">
+            <defs>
+                <!-- Glowing gradient that will travel along the line -->
+                <linearGradient id="ecgGradientLight" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" style="stop-color:rgba(255,255,255,0);stop-opacity:0" />
+                    <stop offset="45%" style="stop-color:rgba(255,255,255,0);stop-opacity:0" />
+                    <stop offset="47%" style="stop-color:rgba(255,255,255,0.2);stop-opacity:0.2" />
+                    <stop offset="48%" style="stop-color:rgba(255,255,255,0.4);stop-opacity:0.4" />
+                    <stop offset="50%" style="stop-color:rgba(255,255,255,1);stop-opacity:1" />
+                    <stop offset="52%" style="stop-color:rgba(255,255,255,0.4);stop-opacity:0.4" />
+                    <stop offset="53%" style="stop-color:rgba(255,255,255,0.2);stop-opacity:0.2" />
+                    <stop offset="55%" style="stop-color:rgba(255,255,255,0.05);stop-opacity:0.05" />
+                    <stop offset="100%" style="stop-color:rgba(255,255,255,0);stop-opacity:0" />
+                    <animate attributeName="x1" values="-300%;400%" dur="8s" repeatCount="indefinite" />
+                    <animate attributeName="x2" values="-200%;500%" dur="8s" repeatCount="indefinite" />
+                </linearGradient>
+            </defs>
+            <!-- Bright pulse light moving along (no base line visible) -->
+            <polyline class="ecg-path-light" points="-100,100 0,100 100,100 120,60 130,140 150,80 170,120 180,100 300,100 320,40 330,160 350,90 370,130 380,100 500,100 520,70 530,130 550,90 570,110 580,100 700,100 720,50 730,150 750,80 770,120 780,100 900,100 1100,100 1200,100 1350,100 1500,100" 
+                     fill="none" 
+                     stroke="url(#ecgGradientLight)" 
+                     stroke-width="4.5" 
+                     stroke-linecap="round"
+                     opacity="1"/>
+        </svg>
+    </div>
+    <div class="auth-box">
+        <h2>Login</h2>
+        <form method="POST" action="{{ url_for('login') }}">
+            <div class="form-group">
+                <label for="login">Username or Email:</label>
+                <input type="text" id="login" name="login" required placeholder="Enter username or email">
+            </div>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit" class="btn-primary">Login</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+

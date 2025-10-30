@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+
+{% block title %}Patient Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <h2>Welcome, {{ current_user.name }}!</h2>
+    
+    <div class="dashboard-grid">
+        <!-- Smoking Log Section -->
+        <div class="dashboard-card">
+            <h3>Add Smoking Log Entry</h3>
+            <form method="POST" action="{{ url_for('add_smoking_log') }}" class="smoking-log-form" id="smokingForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="date">Date:</label>
+                        <input type="date" id="date" name="date" value="{{ date_str }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="time">Time:</label>
+                        <input type="time" id="time" name="time" required>
+                    </div>
+                </div>
+                
+                <div class="form-group autocomplete-wrapper">
+                    <label for="location">Location / Situation:</label>
+                    <input type="text" id="location" name="location" autocomplete="off">
+                    <div class="autocomplete-list"></div>
+                </div>
+                
+                <div class="form-group autocomplete-wrapper">
+                    <label for="trigger">Trigger / Cue:</label>
+                    <input type="text" id="trigger" name="trigger" autocomplete="off">
+                    <div class="autocomplete-list"></div>
+                </div>
+                
+                <div class="form-group autocomplete-wrapper">
+                    <label for="emotion">Emotion / Feeling:</label>
+                    <input type="text" id="emotion" name="emotion" autocomplete="off">
+                    <div class="autocomplete-list"></div>
+                </div>
+                
+                <div class="form-group autocomplete-wrapper">
+                    <label for="who_with">Who You Were With:</label>
+                    <input type="text" id="who_with" name="who_with" autocomplete="off">
+                    <div class="autocomplete-list"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Urge Level:</label>
+                    <div class="urge-buttons">
+                        <input type="hidden" id="urge_level" name="urge_level" required>
+                        <button type="button" class="urge-btn" data-level="1">1</button>
+                        <button type="button" class="urge-btn" data-level="2">2</button>
+                        <button type="button" class="urge-btn" data-level="3">3</button>
+                        <button type="button" class="urge-btn" data-level="4">4</button>
+                        <button type="button" class="urge-btn" data-level="5">5</button>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="smoke_or_resist">Smoke or Resist?:</label>
+                    <select id="smoke_or_resist" name="smoke_or_resist" required>
+                        <option value="">Select...</option>
+                        <option value="Smoked">Smoked</option>
+                        <option value="Resisted">Resisted</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="notes">Notes / Reflection:</label>
+                    <textarea id="notes" name="notes" rows="3"></textarea>
+                </div>
+                
+                <button type="submit" class="btn-primary">Add Entry</button>
+            </form>
+        </div>
+        
+        <!-- Upload Medical Report -->
+        <div class="dashboard-card">
+            <h3>Upload Medical Report</h3>
+            <form method="POST" action="{{ url_for('upload_report') }}" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="report_name">Report Name:</label>
+                    <input type="text" id="report_name" name="report_name" placeholder="e.g., Blood Test - October 2024" required>
+                </div>
+                <div class="form-group">
+                    <label for="file">Select File:</label>
+                    <input type="file" id="file" name="file" accept=".pdf,.jpg,.jpeg,.png" required>
+                </div>
+                <button type="submit" class="btn-primary">Upload Report</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Recent Smoking Logs -->
+    <div class="dashboard-card">
+        <h3>Recent Smoking Logs</h3>
+        {% if logs %}
+            <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Location</th>
+                        <th>Trigger</th>
+                        <th>Emotion</th>
+                        <th>Urge Level</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                    <tr>
+                        <td>{{ log.date }}</td>
+                        <td>{{ log.time }}</td>
+                        <td>{{ log.location or '-' }}</td>
+                        <td>{{ log.trigger or '-' }}</td>
+                        <td>{{ log.emotion or '-' }}</td>
+                        <td>{{ log.urge_level }}</td>
+                        <td class="{{ 'smoked' if log.smoke_or_resist == 'Smoked' else 'resisted' }}">
+                            {{ log.smoke_or_resist }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            </div>
+        {% else %}
+            <p class="no-data">No smoking logs yet. Start tracking your patterns!</p>
+        {% endif %}
+    </div>
+    
+    <!-- Medical Reports -->
+    <div class="dashboard-card">
+        <h3>My Medical Reports</h3>
+        {% if reports %}
+            <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Report Name</th>
+                        <th>Uploaded Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for report in reports %}
+                    <tr>
+                        <td>{{ report.report_name }}</td>
+                        <td>{{ report.uploaded_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td><a href="{{ url_for('view_report', filename=report.filename) }}" target="_blank" class="btn-secondary">View</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            </div>
+        {% else %}
+            <p class="no-data">No medical reports uploaded yet.</p>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+// Set current time automatically
+document.getElementById('time').value = new Date().toTimeString().slice(0, 5);
+
+// Urge level buttons
+const urgeButtons = document.querySelectorAll('.urge-btn');
+const urgeInput = document.getElementById('urge_level');
+
+urgeButtons.forEach(btn => {
+    btn.addEventListener('click', function() {
+        urgeButtons.forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        urgeInput.value = this.dataset.level;
+    });
+});
+
+// Autocomplete functionality
+const autocompleteFields = ['location', 'trigger', 'emotion', 'who_with'];
+
+autocompleteFields.forEach(fieldName => {
+    const input = document.getElementById(fieldName);
+    const wrapper = input.closest('.autocomplete-wrapper');
+    const list = wrapper.querySelector('.autocomplete-list');
+    let suggestions = [];
+    let debounceTimer;
+
+    // Load initial suggestions when field is clicked
+    input.addEventListener('focus', async function() {
+        loadSuggestions(fieldName, '');
+    });
+
+    // Filter suggestions as user types
+    input.addEventListener('input', function() {
+        const query = this.value;
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+            loadSuggestions(fieldName, query);
+        }, 200);
+    });
+
+    // Hide suggestions when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!wrapper.contains(e.target)) {
+            list.style.display = 'none';
+        }
+    });
+
+    async function loadSuggestions(field, query) {
+        try {
+            const response = await fetch(`/autocomplete/${field}?q=${encodeURIComponent(query)}`);
+            suggestions = await response.json();
+            displaySuggestions(list, suggestions, input);
+        } catch (error) {
+            console.error('Error loading suggestions:', error);
+        }
+    }
+
+    function displaySuggestions(listElement, suggestions, inputElement) {
+        if (suggestions.length === 0 || inputElement.value.length === 0) {
+            listElement.style.display = 'none';
+            return;
+        }
+
+        listElement.innerHTML = '';
+        suggestions.forEach(suggestion => {
+            const item = document.createElement('div');
+            item.className = 'autocomplete-item';
+            item.textContent = suggestion;
+            item.addEventListener('click', function() {
+                inputElement.value = suggestion;
+                listElement.style.display = 'none';
+            });
+            listElement.appendChild(item);
+        });
+        listElement.style.display = 'block';
+    }
+});
+</script>
+{% endblock %}
+
