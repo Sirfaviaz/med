@@ -38,16 +38,22 @@
         </button>
     </div>
     
-    <!-- Collapsible Visualizations Section -->
+    <!-- Collapsible Visualizations Section (includes Overall and Summary tabs) -->
     <div id="visualizations-section" class="dashboard-card" style="display: none;">
         <h3>Detailed Analytics</h3>
+        <!-- deploy-marker: viz-tabs-v2 -->
 
         <!-- Visualization Tabs -->
+        <!-- updated: ensure extra tabs are present (Last Week, Today, Monthly, Yearly) -->
         <div class="tabs" style="margin-bottom: 1rem;">
             <button class="tab-btn active" onclick="showVizTab('overall')">Overall</button>
-            <button class="tab-btn" onclick="showVizTab('summary')">Summary</button>
+            <button class="tab-btn" onclick="showVizTab('summary')">Last 30 Days</button>
+            <button class="tab-btn" onclick="showVizTab('lastweek')">Last Week</button>
+            <button class="tab-btn" onclick="showVizTab('today')">Today</button>
+            <button class="tab-btn" onclick="showVizTab('month')">Monthly</button>
+            <button class="tab-btn" onclick="showVizTab('year')">Yearly</button>
         </div>
-
+        
         <!-- Overall Tab Content (existing charts) -->
         <div id="viz-overall" class="tab-content active">
             <div class="charts-grid">
@@ -99,6 +105,34 @@
         <div id="viz-summary" class="tab-content">
             <div class="chart-container" style="width: 100%;">
                 <canvas id="last30Chart"></canvas>
+            </div>
+        </div>
+
+        <!-- Last Week: Mon-Sun previous week -->
+        <div id="viz-lastweek" class="tab-content">
+            <div class="chart-container" style="width: 100%;">
+                <canvas id="lastWeekChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Today: hour-wise 0-23 -->
+        <div id="viz-today" class="tab-content">
+            <div class="chart-container" style="width: 100%;">
+                <canvas id="todayChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Monthly: current month daily counts -->
+        <div id="viz-month" class="tab-content">
+            <div class="chart-container" style="width: 100%;">
+                <canvas id="monthChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Yearly: month-wise counts -->
+        <div id="viz-year" class="tab-content">
+            <div class="chart-container" style="width: 100%;">
+                <canvas id="yearChart"></canvas>
             </div>
         </div>
     </div>
@@ -334,6 +368,107 @@ if (last30Ctx) {
                     precision: 0
                 }
             }
+        }
+    });
+}
+{% endif %}
+
+// Last Week: Monday-Sunday (previous full week)
+{% if summary_lastweek %}
+const lastWeekCtx = document.getElementById('lastWeekChart');
+if (lastWeekCtx) {
+    new Chart(lastWeekCtx, {
+        type: 'bar',
+        data: {
+            labels: [{% for d in summary_lastweek.labels %}'{{ d }}'{% if not loop.last %},{% endif %}{% endfor %}],
+            datasets: [{
+                label: 'Smoked per day (last week)',
+                data: [{% for c in summary_lastweek.counts %}{{ c }}{% if not loop.last %},{% endif %}{% endfor %}],
+                backgroundColor: '#667eea'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: { title: { display: true, text: 'Last Week (Mon-Sun)' } },
+            scales: { y: { beginAtZero: true, precision: 0 } }
+        }
+    });
+}
+{% endif %}
+
+// Today: hour-wise 0-23
+{% if summary_today %}
+const todayCtx = document.getElementById('todayChart');
+if (todayCtx) {
+    new Chart(todayCtx, {
+        type: 'line',
+        data: {
+            labels: [{% for d in summary_today.labels %}'{{ d }}'{% if not loop.last %},{% endif %}{% endfor %}],
+            datasets: [{
+                label: 'Smoked per hour (today)',
+                data: [{% for c in summary_today.counts %}{{ c }}{% if not loop.last %},{% endif %}{% endfor %}],
+                borderColor: '#4caf50',
+                backgroundColor: 'rgba(76, 175, 80, 0.15)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.3,
+                pointRadius: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: { title: { display: true, text: 'Today (hourly)' } },
+            scales: { y: { beginAtZero: true, precision: 0 } }
+        }
+    });
+}
+{% endif %}
+
+// Monthly: current month daily counts
+{% if summary_month %}
+const monthCtx = document.getElementById('monthChart');
+if (monthCtx) {
+    new Chart(monthCtx, {
+        type: 'bar',
+        data: {
+            labels: [{% for d in summary_month.labels %}'{{ d }}'{% if not loop.last %},{% endif %}{% endfor %}],
+            datasets: [{
+                label: 'Smoked per day (this month)',
+                data: [{% for c in summary_month.counts %}{{ c }}{% if not loop.last %},{% endif %}{% endfor %}],
+                backgroundColor: '#ff9800'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: { title: { display: true, text: 'This Month (daily)' } },
+            scales: { y: { beginAtZero: true, precision: 0 } }
+        }
+    });
+}
+{% endif %}
+
+// Yearly: current year month-wise counts
+{% if summary_year %}
+const yearCtx = document.getElementById('yearChart');
+if (yearCtx) {
+    new Chart(yearCtx, {
+        type: 'bar',
+        data: {
+            labels: [{% for d in summary_year.labels %}'{{ d }}'{% if not loop.last %},{% endif %}{% endfor %}],
+            datasets: [{
+                label: 'Smoked per month (this year)',
+                data: [{% for c in summary_year.counts %}{{ c }}{% if not loop.last %},{% endif %}{% endfor %}],
+                backgroundColor: '#9c27b0'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: { title: { display: true, text: 'This Year (monthly)' } },
+            scales: { y: { beginAtZero: true, precision: 0 } }
         }
     });
 }
