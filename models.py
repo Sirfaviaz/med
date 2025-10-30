@@ -39,6 +39,7 @@ class SmokingLog(db.Model):
     who_with = db.Column(db.String(200))
     urge_level = db.Column(db.Integer, nullable=False)
     smoke_or_resist = db.Column(db.String(20), nullable=False)  # 'Smoked' or 'Resisted'
+    how_it_felt = db.Column(db.String(200))
     notes = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     

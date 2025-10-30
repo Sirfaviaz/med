@@ -287,6 +287,7 @@ def add_smoking_log():
         trigger = sanitize_input(request.form.get('trigger', ''), 200)
         emotion = sanitize_input(request.form.get('emotion', ''), 200)
         who_with = sanitize_input(request.form.get('who_with', ''), 200)
+        how_it_felt = sanitize_input(request.form.get('how_it_felt', ''), 200)
         notes = sanitize_input(request.form.get('notes', ''), 500)
         
         log = SmokingLog(
@@ -299,6 +300,7 @@ def add_smoking_log():
             who_with=who_with,
             urge_level=urge_level,
             smoke_or_resist=smoke_or_resist,
+            how_it_felt=how_it_felt,
             notes=notes
         )
         
