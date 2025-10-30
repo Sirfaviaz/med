@@ -4,7 +4,7 @@ from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.exceptions import RequestEntityTooLarge
 from models import db, User, MedicalReport, SmokingLog
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 import re
 import logging
@@ -608,8 +608,31 @@ def view_patient_data(patient_id):
     
     chart_data['trigger_smoke'] = sorted(trigger_smoke_pattern.items(), key=lambda x: x[1], reverse=True) if trigger_smoke_pattern else None
     chart_data['location_smoke'] = sorted(location_smoke_pattern.items(), key=lambda x: x[1], reverse=True) if location_smoke_pattern else None
+
+    # Summary: last 30 days smoked counts per day
+    end_date = datetime.utcnow().date()
+    start_date = end_date - timedelta(days=29)
+    daily_counts = {}
+    for i in range(30):
+        d = start_date + timedelta(days=i)
+        daily_counts[d.strftime('%Y-%m-%d')] = 0
+    for log in smoking_logs:
+        if log.smoke_or_resist == 'Smoked':
+            try:
+                log_date = datetime.strptime(log.date, '%Y-%m-%d').date()
+            except Exception:
+                # Skip if date format is unexpected
+                continue
+            if start_date <= log_date <= end_date:
+                key = log_date.strftime('%Y-%m-%d')
+                daily_counts[key] = daily_counts.get(key, 0) + 1
+
+    summary_last30 = {
+        'labels': list(daily_counts.keys()),
+        'counts': list(daily_counts.values())
+    }
     
-    return render_template('view_patient.html', patient=patient, logs=smoking_logs, reports=reports, stats=stats, chart_data=chart_data)
+    return render_template('view_patient.html', patient=patient, logs=smoking_logs, reports=reports, stats=stats, chart_data=chart_data, summary_last30=summary_last30)
 
 
 @app.route('/autocomplete/<field_name>')
