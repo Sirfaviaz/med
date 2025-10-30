@@ -632,24 +632,23 @@ def view_patient_data(patient_id):
         'counts': list(daily_counts.values())
     }
 
-    # Last week: Monday to Sunday of the previous full week
+    # This week: Monday to Sunday of the current week (future days may be zero)
     today = datetime.utcnow().date()
     current_week_monday = today - timedelta(days=today.weekday())  # this week's Monday
-    last_week_monday = current_week_monday - timedelta(days=7)
-    last_week_days = [last_week_monday + timedelta(days=i) for i in range(7)]
-    last_week_counts = {d.strftime('%Y-%m-%d'): 0 for d in last_week_days}
+    this_week_days = [current_week_monday + timedelta(days=i) for i in range(7)]
+    this_week_counts = {d.strftime('%Y-%m-%d'): 0 for d in this_week_days}
     for log in smoking_logs:
         if log.smoke_or_resist == 'Smoked':
             try:
                 d = datetime.strptime(log.date, '%Y-%m-%d').date()
             except Exception:
                 continue
-            if last_week_monday <= d <= last_week_monday + timedelta(days=6):
+            if current_week_monday <= d <= current_week_monday + timedelta(days=6):
                 key = d.strftime('%Y-%m-%d')
-                last_week_counts[key] = last_week_counts.get(key, 0) + 1
+                this_week_counts[key] = this_week_counts.get(key, 0) + 1
     summary_lastweek = {
-        'labels': [d.strftime('%a %d') for d in last_week_days],
-        'counts': [last_week_counts[d.strftime('%Y-%m-%d')] for d in last_week_days]
+        'labels': [d.strftime('%a %d') for d in this_week_days],
+        'counts': [this_week_counts[d.strftime('%Y-%m-%d')] for d in this_week_days]
     }
 
     # Today: hour-wise 0-23
